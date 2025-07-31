@@ -7,10 +7,11 @@ const TodoList = require("./lib/todolist");
 const Todo = require("./lib/todo");
 const { sortTodoLists, sortTodos } = require("./lib/sort");
 const store = require("connect-loki");
+const SeedData = require("./lib/seed-data"); // Temporary code!
 
 const app = express();
 const host = "localhost";
-const port = 3001;
+const port = 3000;
 const LokiStore = store(session);
 
 app.set("views", "./views");
@@ -35,8 +36,9 @@ app.use(session({
 
 app.use(flash());
 
-// Set up persistent session data
+// Initialize req.session.todoLists as a list of TodoList objects
 app.use((req, res, next) => {
+  req.session.todoLists = SeedData; // Temporary code!
   let todoLists = [];
   if ("todoLists" in req.session) {
     req.session.todoLists.forEach(todoList => {
