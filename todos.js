@@ -127,8 +127,9 @@ app.get("/lists/:todoListId", (req, res, next) => {
     next(new Error("Not found."));
   } else {
     res.render("list", {
-      todoList: todoList,
-      todos: sortTodos(todoList),
+      todoList,
+      isDoneTodoList: res.locals.store.isDoneTodoList(todoList),
+      hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
     });
   }
 });
