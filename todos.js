@@ -121,12 +121,15 @@ app.post("/lists",
 app.get("/lists/:todoListId", (req, res, next) => {
   let todoListId = req.params.todoListId;
   let todoList = res.locals.store.loadTodoList(+todoListId);
+
   if (todoList === undefined) {
     next(new Error("Not found."));
   } else {
     res.render("list", {
-      todoList: todoList,
-      todos: sortTodos(todoList),
+      todoList,
+      todos: todoList.todos,
+      todoListIsDone: res.locals.store.isDoneTodoList(todoList),
+      hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
     });
   }
 });
@@ -222,7 +225,7 @@ app.post("/lists/:todoListId/todos",
 // Render edit todo list form
 app.get("/lists/:todoListId/edit", (req, res, next) => {
   let todoListId = req.params.todoListId;
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
+  let todoList = res.locals.store.loadTodoList(+todoListId);
   if (!todoList) {
     next(new Error("Not found."));
   } else {
