@@ -50,12 +50,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Find a todo list with the indicated ID. Returns `undefined` if not found.
-// Note that `todoListId` must be numeric.
-const loadTodoList = (todoListId, todoLists) => {
-  return todoLists.find(todoList => todoList.id === todoListId);
-};
-
 // Find a todo with the indicated ID in the indicated todo list. Returns
 // `undefined` if not found. Note that both `todoListId` and `todoId` must be
 // numeric.
@@ -126,7 +120,7 @@ app.post("/lists",
 // Render individual todo list and its todos
 app.get("/lists/:todoListId", (req, res, next) => {
   let todoListId = req.params.todoListId;
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
+  let todoList = res.locals.store.loadTodoList(+todoListId);
   if (todoList === undefined) {
     next(new Error("Not found."));
   } else {
