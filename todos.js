@@ -5,7 +5,7 @@ const session = require("express-session");
 const { body, validationResult } = require("express-validator");
 const TodoList = require("./lib/todolist");
 const Todo = require("./lib/todo");
-const { sortTodoLists, sortTodos } = require("./lib/sort");
+const { sortTodos } = require("./lib/sort");
 const store = require("connect-loki");
 const SessionPersistence = require("./lib/session-persistence");
 const SeedData = require("./lib/seed-data");  // temp code!
@@ -36,20 +36,6 @@ app.use(session({
 }));
 
 app.use(flash());
-
-// Set up persistent session data
-// app.use((req, res, next) => {
-//   req.session.todoLists = SeedData; // temp code!
-//   let todoLists = [];
-//   if ("todoLists" in req.session) {
-//     req.session.todoLists.forEach(todoList => {
-//       todoLists.push(TodoList.makeTodoList(todoList));
-//     });
-//   }
-
-//   req.session.todoLists = todoLists;
-//   next();
-// });
 
 // Create a new datastore
 app.use((req, res, next) => {
@@ -87,8 +73,16 @@ app.get("/", (req, res) => {
 
 // Render the list of todo lists
 app.get("/lists", (req, res) => {
+  let todoLists = res.locals.store.sortedTodoLists();
+  let todosInfo = todoLists.map(todoList => ({
+    countAllTodos: todoList.todos.length,
+    countDoneTodos: todoList.todos.filter(todo => todo.done).length,
+    isDone: res.locals.store.isDoneTodoList(todoList),
+  }));
+
   res.render("lists", {
-    todoLists: sortTodoLists(req.session.todoLists),
+    todoLists,
+    todosInfo,
   });
 });
 
