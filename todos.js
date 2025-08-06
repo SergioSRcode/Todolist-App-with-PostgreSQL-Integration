@@ -53,7 +53,7 @@ app.use((req, res, next) => {
 // // Find a todo with the indicated ID in the indicated todo list. Returns
 // // `undefined` if not found. Note that both `todoListId` and `todoId` must be
 // // numeric.
-// const loadTodo = (todoListId, todoId, todoLists) => {
+// const res.locals.store.loadTodo = (todoListId {
 //   let todoList = loadTodoList(todoListId, todoLists);
 //   if (!todoList) return undefined;
 
@@ -139,19 +139,19 @@ app.get("/lists/:todoListId", (req, res, next) => {
 // Toggle completion status of a todo
 app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
-  let todo = loadTodo(+todoListId, +todoId, req.session.todoLists);
+  res.locals.store.toggleTodo(+todoListId, +todoId);
+  let todo = res.locals.store.loadTodo(+todoListId, +todoId);
+  console.log(todo.done);
   if (!todo) {
     next(new Error("Not found."));
   } else {
     let title = todo.title;
-    if (todo.isDone()) {
-      todo.markUndone();
+    if (!todo.done) {
       req.flash("success", `"${title}" marked as NOT done!`);
     } else {
-      todo.markDone();
       req.flash("success", `"${title}" marked done.`);
     }
-
+    console.log(todo.done);
     res.redirect(`/lists/${todoListId}`);
   }
 });
@@ -160,11 +160,11 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
 app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
 
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
+  let todoList = res.locals.store.loadTodoList(+todoListId);
   if (!todoList) {
     next(new Error("Not found."));
   } else {
-    let todo = loadTodo(+todoListId, +todoId, req.session.todoLists);
+    let todo = res.locals.store.loadTodo(+todoListId, +todoId);
     if (!todo) {
       next(new Error("Not found."));
     } else {
@@ -178,7 +178,7 @@ app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
 // Mark all todos as done
 app.post("/lists/:todoListId/complete_all", (req, res, next) => {
   let todoListId = req.params.todoListId;
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
+  let todoList = res.locals.store.loadTodoList(+todoListId);
   if (!todoList) {
     next(new Error("Not found."));
   } else {
@@ -200,7 +200,7 @@ app.post("/lists/:todoListId/todos",
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
-    let todoList = loadTodoList(+todoListId, req.session.todoLists);
+    let todoList = res.locals.store.loadTodoList(+todoListId);
     if (!todoList) {
       next(new Error("Not found."));
     } else {
@@ -268,7 +268,7 @@ app.post("/lists/:todoListId/edit",
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
-    let todoList = loadTodoList(+todoListId, req.session.todoLists);
+    let todoList = res.locals.store.loadTodoList(+todoListId);
     if (!todoList) {
       next(new Error("Not found."));
     } else {
