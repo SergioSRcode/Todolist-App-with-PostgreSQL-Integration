@@ -50,15 +50,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// Find a todo with the indicated ID in the indicated todo list. Returns
-// `undefined` if not found. Note that both `todoListId` and `todoId` must be
-// numeric.
-const loadTodo = (todoListId, todoId, todoLists) => {
-  let todoList = loadTodoList(todoListId, todoLists);
-  if (!todoList) return undefined;
+// // Find a todo with the indicated ID in the indicated todo list. Returns
+// // `undefined` if not found. Note that both `todoListId` and `todoId` must be
+// // numeric.
+// const loadTodo = (todoListId, todoId, todoLists) => {
+//   let todoList = loadTodoList(todoListId, todoLists);
+//   if (!todoList) return undefined;
 
-  return todoList.todos.find(todo => todo.id === todoId);
-};
+//   return todoList.todos.find(todo => todo.id === todoId);
+// };
 
 // Redirect start page
 app.get("/", (req, res) => {
