@@ -139,8 +139,8 @@ app.get("/lists/:todoListId", (req, res, next) => {
 // Toggle completion status of a todo
 app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
-  res.locals.store.toggleTodo(+todoListId, +todoId);
-  let todo = res.locals.store.loadTodo(+todoListId, +todoId);
+  res.locals.store.toggleTodo(+todoListId, +todoId);  // toggles todo.done
+  let todo = res.locals.store.loadTodo(+todoListId, +todoId); // retrieves updated todo
   console.log(todo.done);
   if (!todo) {
     next(new Error("Not found."));
