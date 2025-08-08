@@ -92,12 +92,6 @@ app.post("/lists",
       .withMessage("The list title is required.")
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
-      .custom((title, { req }) => {
-        let todoLists = req.session.todoLists;
-        let duplicate = todoLists.find(list => list.title === title);
-        return duplicate === undefined;
-      })
-      .withMessage("List title must be unique."),
   ],
   (req, res) => {
     let errors = validationResult(req);
@@ -241,12 +235,6 @@ app.post("/lists/:todoListId/edit",
       .withMessage("The list title is required.")
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
-      .custom((title, { req }) => {
-        let todoLists = req.session.todoLists;
-        let duplicate = todoLists.find(list => list.title === title);
-        return duplicate === undefined;
-      })
-      .withMessage("List title must be unique."),
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
