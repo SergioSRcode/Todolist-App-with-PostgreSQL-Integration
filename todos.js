@@ -141,7 +141,6 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
   res.locals.store.toggleTodo(+todoListId, +todoId);  // toggles todo.done
   let todo = res.locals.store.loadTodo(+todoListId, +todoId); // retrieves updated todo
-  console.log(todo.done);
   if (!todo) {
     next(new Error("Not found."));
   } else {
@@ -151,7 +150,7 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
     } else {
       req.flash("success", `"${title}" marked done.`);
     }
-    console.log(todo.done);
+ 
     res.redirect(`/lists/${todoListId}`);
   }
 });
@@ -170,14 +169,12 @@ app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
 // Mark all todos as done
 app.post("/lists/:todoListId/complete_all", (req, res, next) => {
   let todoListId = req.params.todoListId;
-  let todoList = res.locals.store.loadTodoList(+todoListId);
-  if (!todoList) {
-    next(new Error("Not found."));
-  } else {
-    todoList.markAllDone();
-    req.flash("success", "All todos have been marked as done.");
-    res.redirect(`/lists/${todoListId}`);
-  }
+  let isValidTodoList = res.locals.store._isValidTodoList(+todoListId);
+  if (!isValidTodoList) return next(new Error("Not found."));
+
+  res.locals.store.completeAllTodos(+todoListId);
+  req.flash("success", "All todos have been marked as done.");
+  res.redirect(`/lists/${todoListId}`);
 });
 
 // Create a new todo and add it to the specified list
