@@ -229,20 +229,16 @@ app.get("/lists/:todoListId/edit", (req, res, next) => {
 
 // Delete todo list
 app.post("/lists/:todoListId/destroy", (req, res, next) => {
-  let todoLists = req.session.todoLists;
-  let todoListId = +req.params.todoListId;
-  let index = todoLists.findIndex(todoList => todoList.id === todoListId);
-  if (index === -1) {
+  let todoListId = req.params.todoListId;
+  let deleted = res.locals.store.deleteTodoList(+todoListId);
+  if (!deleted) {
     next(new Error("Not found."));
   } else {
-    todoLists.splice(index, 1);
-
     req.flash("success", "Todo list deleted.");
     res.redirect("/lists");
   }
 });
 
-// Edit todo list title
 // Edit todo list title
 app.post("/lists/:todoListId/edit",
   [
