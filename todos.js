@@ -159,20 +159,12 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
 // Delete a todo
 app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
-
-  let todoList = res.locals.store.loadTodoList(+todoListId);
-  if (!todoList) {
-    next(new Error("Not found."));
-  } else {
-    let todo = res.locals.store.loadTodo(+todoListId, +todoId);
-    if (!todo) {
-      next(new Error("Not found."));
-    } else {
-      todoList.removeAt(todoList.findIndexOf(todo));
-      req.flash("success", "The todo has been deleted.");
-      res.redirect(`/lists/${todoListId}`);
-    }
-  }
+  let validListAndTodo = res.locals.store._isValid(+todoListId, +todoId);
+  if (!validListAndTodo) return next(new Error("Not found."));
+  
+  res.locals.store.deleteTodo(+todoListId, +todoId);
+  req.flash("success", "The todo has been deleted.");
+  res.redirect(`/lists/${todoListId}`);
 });
 
 // Mark all todos as done
