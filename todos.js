@@ -223,17 +223,13 @@ app.get("/lists/:todoListId/edit", (req, res, next) => {
 
 // Delete todo list
 app.post("/lists/:todoListId/destroy", (req, res, next) => {
-  let todoLists = req.session.todoLists;
   let todoListId = +req.params.todoListId;
-  let index = todoLists.findIndex(todoList => todoList.id === todoListId);
-  if (index === -1) {
-    next(new Error("Not found."));
-  } else {
-    todoLists.splice(index, 1);
+  let index = res.locals.store._findTodoListIndex(+todoListId);
+  if (index === -1) return next(new Error("Not found."));
 
-    req.flash("success", "Todo list deleted.");
-    res.redirect("/lists");
-  }
+  res.locals.store.deleteTodoList(index);
+  req.flash("success", "Todo list deleted.");
+  res.redirect("/lists");
 });
 
 // Edit todo list title
