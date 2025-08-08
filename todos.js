@@ -4,8 +4,6 @@ const flash = require("express-flash");
 const session = require("express-session");
 const { body, validationResult } = require("express-validator");
 const TodoList = require("./lib/todolist");
-const Todo = require("./lib/todo");
-const { sortTodos } = require("./lib/sort");
 const store = require("connect-loki");
 const SessionPersistence = require("./lib/session-persistence");
 const SeedData = require("./lib/seed-data");  // temp code!
@@ -190,25 +188,24 @@ app.post("/lists/:todoListId/todos",
   (req, res, next) => {
     let todoListId = req.params.todoListId;
     let todoList = res.locals.store.loadTodoList(+todoListId);
-    if (!todoList) {
-      next(new Error("Not found."));
-    } else {
-      let errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        errors.array().forEach(message => req.flash("error", message.msg));
+    if (!todoList) return next(new Error("Not found."));
 
-        res.render("list", {
-          flash: req.flash(),
-          todoList: todoList,
-          todos: sortTodos(todoList),
-          todoTitle: req.body.todoTitle,
-        });
-      } else {
-        let todo = new Todo(req.body.todoTitle);
-        todoList.add(todo);
-        req.flash("success", "The todo has been created.");
-        res.redirect(`/lists/${todoListId}`);
-      }
+    let errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      errors.array().forEach(message => req.flash("error", message.msg));
+
+      res.render("list", {
+        flash: req.flash(),
+        todoList: todoList,
+        todos: res.locals.store.sortedTodos(todoList),
+        todoTitle: req.body.todoTitle,
+      });
+    } else {
+      if (!res.locals.store._isValidTodoList(+todoListId)) return next(new Error("Not found."));
+
+      res.locals.store.addTodo(+todoListId, req.body.todoTitle);
+      req.flash("success", "The todo has been created.");
+      res.redirect(`/lists/${todoListId}`);
     }
   }
 );
