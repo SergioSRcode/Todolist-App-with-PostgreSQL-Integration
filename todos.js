@@ -157,19 +157,13 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
 // Delete a todo
 app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
   let { todoListId, todoId } = { ...req.params };
-
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
-  if (!todoList) {
+  let deleted = res.locals.store.deleteTodo(+todoListId, +todoId);
+  
+  if (!deleted) {
     next(new Error("Not found."));
   } else {
-    let todo = loadTodo(+todoListId, +todoId, req.session.todoLists);
-    if (!todo) {
-      next(new Error("Not found."));
-    } else {
-      todoList.removeAt(todoList.findIndexOf(todo));
-      req.flash("success", "The todo has been deleted.");
-      res.redirect(`/lists/${todoListId}`);
-    }
+    req.flash("success", "The todo has been deleted.");
+    res.redirect(`/lists/${todoListId}`);
   }
 });
 
