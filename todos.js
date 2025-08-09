@@ -247,7 +247,7 @@ app.post("/lists/:todoListId/edit",
     if(res.locals.store.existsTodoListTitle(newTodoListTitle)) {
       errors.errors.push({ 
         value: '',
-        msg: 'No duplicates allowed',
+        msg: 'The list title must be unique.',
         param: 'todoListTitle',
         location: 'body'
       });
