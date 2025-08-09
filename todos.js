@@ -3,7 +3,6 @@ const morgan = require("morgan");
 const flash = require("express-flash");
 const session = require("express-session");
 const { body, validationResult } = require("express-validator");
-const TodoList = require("./lib/todolist");
 const store = require("connect-loki");
 const SessionPersistence = require("./lib/session-persistence");
 const SeedData = require("./lib/seed-data");  // temp code!
@@ -94,15 +93,27 @@ app.post("/lists",
       .withMessage("List title must be between 1 and 100 characters.")
   ],
   (req, res) => {
+    let todoListTitle = req.body.todoListTitle;
     let errors = validationResult(req);
+
+    // eliminates duplicate todolist titles
+    if(res.locals.store.existsTodoListTitle(todoListTitle)) {
+      errors.errors.push({ 
+        value: '',
+        msg: 'The list title must be unique.',
+        param: 'todoListTitle',
+        location: 'body'
+      });
+    }
+
     if (!errors.isEmpty()) {
       errors.array().forEach(message => req.flash("error", message.msg));
       res.render("new-list", {
         flash: req.flash(),
-        todoListTitle: req.body.todoListTitle,
+        todoListTitle,
       });
     } else {
-      req.session.todoLists.push(new TodoList(req.body.todoListTitle));
+      res.locals.store.addTodoList(todoListTitle);
       req.flash("success", "The todo list has been created.");
       res.redirect("/lists");
     }
