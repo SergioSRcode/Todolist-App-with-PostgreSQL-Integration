@@ -243,6 +243,15 @@ app.post("/lists/:todoListId/edit",
 
     let newTodoListTitle = req.body.todoListTitle;
     let errors = validationResult(req);
+    // eliminates duplicate todolist titles
+    if(res.locals.store.existsTodoListTitle(newTodoListTitle)) {
+      errors.errors.push({ 
+        value: '',
+        msg: 'No duplicates allowed',
+        param: 'todoListTitle',
+        location: 'body'
+      });
+    }
     
     if (!errors.isEmpty()) {
       errors.array().forEach(message => req.flash("error", message.msg));
