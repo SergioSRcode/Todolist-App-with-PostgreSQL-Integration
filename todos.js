@@ -213,7 +213,7 @@ app.post("/lists/:todoListId/todos",
 // Render edit todo list form
 app.get("/lists/:todoListId/edit", (req, res, next) => {
   let todoListId = req.params.todoListId;
-  let todoList = loadTodoList(+todoListId, req.session.todoLists);
+  let todoList = res.locals.store.loadTodoList(+todoListId);
   if (!todoList) {
     next(new Error("Not found."));
   } else {
@@ -245,21 +245,25 @@ app.post("/lists/:todoListId/edit",
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
-    let todoList = loadTodoList(+todoListId, req.session.todoLists);
+    let todoList = res.locals.store.loadTodoList(+todoListId);
     if (!todoList) {
       next(new Error("Not found."));
     } else {
+      let todoListTitle = req.body.todoListTitle;
       let errors = validationResult(req);
       if (!errors.isEmpty()) {
         errors.array().forEach(message => req.flash("error", message.msg));
 
         res.render("edit-list", {
           flash: req.flash(),
-          todoListTitle: req.body.todoListTitle,
+          todoListTitle,
           todoList: todoList,
         });
       } else {
-        todoList.setTitle(req.body.todoListTitle);
+        if (!res.locals.store.setTodoListTitle(+todoListId, todoListTitle)) {
+          next(new Error("Not found."));
+        }
+
         req.flash("success", "Todo list updated.");
         res.redirect(`/lists/${todoListId}`);
       }
