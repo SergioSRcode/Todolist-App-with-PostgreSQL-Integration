@@ -239,23 +239,24 @@ app.post("/lists/:todoListId/edit",
   (req, res, next) => {
     let todoListId = req.params.todoListId;
     let todoList = res.locals.store.loadTodoList(+todoListId);
-    if (!todoList) {
-      next(new Error("Not found."));
-    } else {
-      let errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        errors.array().forEach(message => req.flash("error", message.msg));
+    if (!todoList) return next(new Error("Not found."));
 
-        res.render("edit-list", {
-          flash: req.flash(),
-          todoListTitle: req.body.todoListTitle,
-          todoList: todoList,
-        });
-      } else {
-        todoList.setTitle(req.body.todoListTitle);
-        req.flash("success", "Todo list updated.");
-        res.redirect(`/lists/${todoListId}`);
-      }
+    let newTodoListTitle = req.body.todoListTitle;
+    let errors = validationResult(req);
+    
+    if (!errors.isEmpty()) {
+      errors.array().forEach(message => req.flash("error", message.msg));
+      res.render("edit-list", {
+        flash: req.flash(),
+        todoListTitle: newTodoListTitle,
+        todoList: todoList,
+      });
+    } else {
+      if (!res.locals.store._isValidTodoList(+todoListId)) next(new Error("Not found."));
+      
+      res.locals.store.renameTodoList(+todoListId, newTodoListTitle);
+      req.flash("success", "Todo list updated.");
+      res.redirect(`/lists/${todoListId}`);
     }
   }
 );
