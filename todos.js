@@ -52,20 +52,24 @@ app.get("/", (req, res) => {
 });
 
 // Render the list of todo lists
-app.get("/lists", (req, res) => {
-  let store = res.locals.store;
-  let todoLists = store.sortedTodoLists();
+app.get("/lists", async (req, res) => {
+  try {
+    let store = res.locals.store;
+    let todoLists = await store.sortedTodoLists();
 
-  let todosInfo = todoLists.map(todoList => ({
-    countAllTodos: todoList.todos.length,
-    countDoneTodos: todoList.todos.filter(todo => todo.done).length,
-    isDone: store.isDoneTodoList(todoList),
-  }));
+    let todosInfo = todoLists.map(todoList => ({
+      countAllTodos: todoList.todos.length,
+      countDoneTodos: todoList.todos.filter(todo => todo.done).length,
+      isDone: store.isDoneTodoList(todoList),
+    }));
 
-  res.render("lists", {
-    todoLists,
-    todosInfo,
-  });
+    res.render("lists", {
+      todoLists,
+      todosInfo,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Render new todo list page
