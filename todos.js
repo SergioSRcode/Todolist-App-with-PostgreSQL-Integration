@@ -5,7 +5,7 @@ const session = require("express-session");
 const { body, validationResult } = require("express-validator");
 const store = require("connect-loki");
 const SessionPersistence = require("./lib/session-persistence");
-const SeedData = require("./lib/seed-data");  // temp code!
+// const SeedData = require("./lib/seed-data");  // temp code!
 
 const app = express();
 const host = "localhost";
