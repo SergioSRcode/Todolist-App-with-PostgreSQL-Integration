@@ -64,8 +64,9 @@ app.get("/", (req, res) => {
 });
 
 // Render the list of todo lists
-app.get("/lists", (req, res) => {
-  let todoLists = res.locals.store.sortedTodoLists();
+app.get("/lists", async (req, res) => {
+  try {
+  let todoLists = await res.locals.store.sortedTodoLists();
   let todosInfo = todoLists.map(todoList => ({
     countAllTodos: todoList.todos.length,
     countDoneTodos: todoList.todos.filter(todo => todo.done).length,
@@ -76,6 +77,9 @@ app.get("/lists", (req, res) => {
     todoLists,
     todosInfo,
   });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Render new todo list page
