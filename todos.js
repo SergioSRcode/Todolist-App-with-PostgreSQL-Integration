@@ -66,17 +66,17 @@ app.get("/", (req, res) => {
 // Render the list of todo lists
 app.get("/lists", async (req, res) => {
   try {
-  let todoLists = await res.locals.store.sortedTodoLists();
-  let todosInfo = todoLists.map(todoList => ({
-    countAllTodos: todoList.todos.length,
-    countDoneTodos: todoList.todos.filter(todo => todo.done).length,
-    isDone: res.locals.store.isDoneTodoList(todoList),
-  }));
+    let todoLists = await res.locals.store.sortedTodoLists();
+    let todosInfo = todoLists.map(todoList => ({
+      countAllTodos: todoList.todos.length,
+      countDoneTodos: todoList.todos.filter(todo => todo.done).length,
+      isDone: res.locals.store.isDoneTodoList(todoList),
+    }));
 
-  res.render("lists", {
-    todoLists,
-    todosInfo,
-  });
+    res.render("lists", {
+      todoLists,
+      todosInfo,
+    });
   } catch (error) {
     next(error);
   }
