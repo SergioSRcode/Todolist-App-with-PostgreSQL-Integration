@@ -5,8 +5,6 @@ const session = require("express-session");
 const { body, validationResult } = require("express-validator");
 const PgPersistence = require("./lib/pg-persistence");
 const store = require("connect-loki");
-// const SessionPersistence = require("./lib/session-persistence");
-// const SeedData = require("./lib/seed-data"); // Temporary code!
 
 const app = express();
 const host = "localhost";
@@ -41,40 +39,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Temporary test code
-app.use(async (req, res, next) => {
-  try {
-    await res.locals.store.testQuery1();
-    await res.locals.store.testQuery2();
-    await res.locals.store.testQuery3("Work Todos");
-    await res.locals.store.testQuery3("Work Todos");
-    await res.locals.store.testQuery3("No Such Todos");
-    // Note the changes on this line.
-    const maliciousCode = "'; UPDATE todos SET done = true WHERE done <> 't";
-    await res.locals.store.testQuery3(maliciousCode);
-    res.send("quitting");
-  } catch (error) {
-    next(error);
-  }
-  
-});
-
 // Extract session info
 app.use((req, res, next) => {
   res.locals.flash = req.session.flash;
   delete req.session.flash;
   next();
 });
-
-// // Find a todo with the indicated ID in the indicated todo list. Returns
-// // `undefined` if not found. Note that both `todoListId` and `todoId` must be
-// // numeric.
-// const loadTodo = (todoListId, todoId, todoLists) => {
-//   let todoList = loadTodoList(todoListId, todoLists);
-//   if (!todoList) return undefined;
-
-//   return todoList.todos.find(todo => todo.id === todoId);
-// };
 
 // Redirect start page
 app.get("/", (req, res) => {
