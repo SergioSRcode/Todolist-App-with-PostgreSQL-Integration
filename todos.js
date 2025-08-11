@@ -3,8 +3,9 @@ const morgan = require("morgan");
 const flash = require("express-flash");
 const session = require("express-session");
 const { body, validationResult } = require("express-validator");
+const PgPersistence = require("./lib/pg-persistence");
 const store = require("connect-loki");
-const SessionPersistence = require("./lib/session-persistence");
+// const SessionPersistence = require("./lib/session-persistence");
 // const SeedData = require("./lib/seed-data");  // temp code!
 
 const app = express();
@@ -36,8 +37,19 @@ app.use(flash());
 
 // Create a new datastore
 app.use((req, res, next) => {
-  res.locals.store = new SessionPersistence(req.session);
+  res.locals.store = new PgPersistence(req.session);
   next();
+});
+
+// Temp test code
+app.use(async (req, res, next) => {
+  try {
+    await res.locals.store.testQuery1();
+    await res.locals.store.testQuery2();
+    res.send("quitting");
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Extract session info
