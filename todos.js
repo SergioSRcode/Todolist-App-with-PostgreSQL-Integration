@@ -46,6 +46,12 @@ app.use(async (req, res, next) => {
   try {
     await res.locals.store.testQuery1();
     await res.locals.store.testQuery2();
+    await res.locals.store.testQuery3("Work Todos");
+    await res.locals.store.testQuery3("Work Todos");
+    await res.locals.store.testQuery3("No Such Todos");
+    // Note the changes on this line.
+    const maliciousCode = "'; UPDATE todos SET done = true WHERE done <> 't";
+    await res.locals.store.testQuery3(maliciousCode);
     res.send("quitting");
   } catch (error) {
     next(error);
