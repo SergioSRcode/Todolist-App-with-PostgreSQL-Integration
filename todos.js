@@ -214,10 +214,10 @@ app.post("/lists/:todoListId/todos",
       .isLength({ max: 100 })
       .withMessage("Todo title must be between 1 and 100 characters."),
   ],
-  (req, res, next) => {
+  catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
-    let todoList = res.locals.store.loadTodoList(+todoListId);
-    if (!todoList) return next(new Error("Not found."));
+    let todoList = await res.locals.store.loadTodoList(+todoListId);
+    if (!todoList) throw new Error("Not found.");
 
     let errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -226,17 +226,19 @@ app.post("/lists/:todoListId/todos",
       res.render("list", {
         flash: req.flash(),
         todoList: todoList,
-        todos: res.locals.store.sortedTodos(todoList),
+        todos: await res.locals.store.sortedTodos(todoList),
         todoTitle: req.body.todoTitle,
       });
     } else {
-      if (!res.locals.store._isValidTodoList(+todoListId)) return next(new Error("Not found."));
+      let isValidTodoList = await res.locals.store._isValidTodoList(+todoListId);
+      if (!isValidTodoList) throw new Error("Not found.");
+      console.log("correct");
 
-      res.locals.store.addTodo(+todoListId, req.body.todoTitle);
+      await res.locals.store.addTodo(+todoListId, req.body.todoTitle);
       req.flash("success", "The todo has been created.");
       res.redirect(`/lists/${todoListId}`);
     }
-  }
+  })
 );
 
 // Render edit todo list form
