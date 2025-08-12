@@ -245,38 +245,51 @@ app.post("/lists/:todoListId/edit",
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
   ],
-  (req, res, next) => {
+  catchError(async (req, res, next) => {
     let todoListId = req.params.todoListId;
-    let todoList = res.locals.store.loadTodoList(+todoListId);
-    if (!todoList) return next(new Error("Not found."));
+    let todoList = await res.locals.store.loadTodoList(+todoListId);
+    if (!todoList) throw new Error("Not found.");
 
     let newTodoListTitle = req.body.todoListTitle;
-    let errors = validationResult(req);
-    // eliminates duplicate todolist titles
-    if(res.locals.store.existsTodoListTitle(newTodoListTitle)) {
-      errors.errors.push({ 
-        value: '',
-        msg: 'The list title must be unique.',
-        param: 'todoListTitle',
-        location: 'body'
-      });
-    }
-    
-    if (!errors.isEmpty()) {
-      errors.array().forEach(message => req.flash("error", message.msg));
-      res.render("edit-list", {
+    // try/catch block handles race conditions
+    try {
+      let errors = validationResult(req);
+      // eliminates duplicate todolist titles
+      if (await res.locals.store.existsTodoListTitle(newTodoListTitle)) {
+        errors.errors.push({ 
+          value: '',
+          msg: 'The list title must be unique.',
+          param: 'todoListTitle',
+          location: 'body'
+        });
+      }
+      
+      if (!errors.isEmpty()) {
+        errors.array().forEach(message => req.flash("error", message.msg));
+        res.render("edit-list", {
+          flash: req.flash(),
+          todoListTitle: newTodoListTitle,
+          todoList,
+        });
+      } else {
+        let isValidTodoList = await res.locals.store._isValidTodoList(+todoListId);
+        if (!isValidTodoList) throw new Error("Not found.");
+        
+        await res.locals.store.renameTodoList(+todoListId, newTodoListTitle);
+        req.flash("success", "Todo list updated.");
+        res.redirect(`/lists/${todoListId}`);
+      }
+    } catch (error) {
+      if (res.locals.store.isUniqueConstraintViolation(error)) {
+        req.flash("error", "The list title must be unique.");
+        res.render("edit-list", {
         flash: req.flash(),
         todoListTitle: newTodoListTitle,
-        todoList: todoList,
-      });
-    } else {
-      if (!res.locals.store._isValidTodoList(+todoListId)) next(new Error("Not found."));
-      
-      res.locals.store.renameTodoList(+todoListId, newTodoListTitle);
-      req.flash("success", "Todo list updated.");
-      res.redirect(`/lists/${todoListId}`);
+        todoList,
+        });
+      }
     }
-  }
+  })
 );
 
 // Error handler
