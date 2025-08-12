@@ -6,8 +6,6 @@ const { body, validationResult } = require("express-validator");
 const PgPersistence = require("./lib/pg-persistence");
 const store = require("connect-loki");
 const catchError = require("./lib/catch-error");
-// const SessionPersistence = require("./lib/session-persistence");
-// const SeedData = require("./lib/seed-data");  // temp code!
 
 const app = express();
 const host = "localhost";
@@ -48,16 +46,6 @@ app.use((req, res, next) => {
   delete req.session.flash;
   next();
 });
-
-// // Find a todo with the indicated ID in the indicated todo list. Returns
-// // `undefined` if not found. Note that both `todoListId` and `todoId` must be
-// // numeric.
-// const res.locals.store.loadTodo = (todoListId {
-//   let todoList = loadTodoList(todoListId, todoLists);
-//   if (!todoList) return undefined;
-
-//   return todoList.todos.find(todo => todo.id === todoId);
-// };
 
 // Redirect start page
 app.get("/", (req, res) => {
@@ -124,24 +112,6 @@ app.post("/lists",
   }
 );
 
-// Render individual todo list and its todos
-// app.get("/lists/:todoListId", (req, res, next) => {
-//   let todoListId = req.params.todoListId;
-//   let todoList = res.locals.store.loadTodoList(+todoListId);
-
-//   if (todoList === undefined) {
-//     next(new Error("Not found."));
-//   } else {
-//     // todoList.todos = res.locals.store.sortedTodos(todoList);
-    
-//     res.render("list", {
-//       todoList,
-//       todos: todoList.todos,
-//       todoListIsDone: res.locals.store.isDoneTodoList(todoList),
-//       hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
-//     });
-//   }
-// });
 app.get("/lists/:todoListId", 
   catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
