@@ -148,7 +148,7 @@ app.get("/lists/:todoListId", async (req, res, next) => {
     let todoListId = req.params.todoListId;
     let todoList = await res.locals.store.loadTodoList(+todoListId);
     if (todoList === undefined) throw new Error("Not found.");
-    // todoList.todos = res.locals.store.sortedTodos(todoList);
+    todoList.todos = await res.locals.store.sortedTodos(todoList);
     
     res.render("list", {
       todoList,
