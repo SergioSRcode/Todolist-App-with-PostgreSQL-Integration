@@ -180,7 +180,12 @@ app.post("/lists/:todoListId/complete_all",
 // Create a new todo and add it to the specified list
 app.post("/lists/:todoListId/todos",
   [
-    // omitted code
+    body("todoListTitle")
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("The list title is required.")
+    .isLength({ max: 100 })
+    .withMessage("List title must be between 1 and 100 characters.")
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
