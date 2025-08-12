@@ -192,15 +192,17 @@ app.post("/lists/:todoListId/todos/:todoId/destroy",
 );
 
 // Mark all todos as done
-app.post("/lists/:todoListId/complete_all", (req, res, next) => {
-  let todoListId = req.params.todoListId;
-  let isValidTodoList = res.locals.store._isValidTodoList(+todoListId);
-  if (!isValidTodoList) return next(new Error("Not found."));
+app.post("/lists/:todoListId/complete_all", 
+  catchError(async (req, res) => {
+    let todoListId = req.params.todoListId;
+    let isValidTodoList = await res.locals.store._isValidTodoList(+todoListId);
+    if (!isValidTodoList) throw new Error("Not found.");
 
-  res.locals.store.completeAllTodos(+todoListId);
-  req.flash("success", "All todos have been marked as done.");
-  res.redirect(`/lists/${todoListId}`);
-});
+    await res.locals.store.completeAllTodos(+todoListId);
+    req.flash("success", "All todos have been marked as done.");
+    res.redirect(`/lists/${todoListId}`);
+  })
+);
 
 // Create a new todo and add it to the specified list
 app.post("/lists/:todoListId/todos",
