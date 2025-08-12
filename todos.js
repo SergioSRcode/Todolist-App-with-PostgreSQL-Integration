@@ -143,7 +143,7 @@ app.post("/lists",
 //   }
 // });
 app.get("/lists/:todoListId", 
-  catchError(async (req, res, next) => {
+  catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
     let todoList = await res.locals.store.loadTodoList(+todoListId);
     if (todoList === undefined) throw new Error("Not found.");
@@ -161,7 +161,7 @@ app.get("/lists/:todoListId",
 
 // Toggle completion status of a todo
 app.post("/lists/:todoListId/todos/:todoId/toggle", 
-  catchError(async (req, res, next) => {
+  catchError(async (req, res) => {
     let { todoListId, todoId } = { ...req.params };
     await res.locals.store.toggleTodo(+todoListId, +todoId);  // toggles todo.done
     let todo = await res.locals.store.loadTodo(+todoListId, +todoId); // retrieves updated todo
@@ -179,15 +179,17 @@ app.post("/lists/:todoListId/todos/:todoId/toggle",
 );
 
 // Delete a todo
-app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
-  let { todoListId, todoId } = { ...req.params };
-  let validListAndTodo = res.locals.store._isValid(+todoListId, +todoId);
-  if (!validListAndTodo) return next(new Error("Not found."));
-  
-  res.locals.store.deleteTodo(+todoListId, +todoId);
-  req.flash("success", "The todo has been deleted.");
-  res.redirect(`/lists/${todoListId}`);
-});
+app.post("/lists/:todoListId/todos/:todoId/destroy", 
+  catchError(async (req, res) => {
+    let { todoListId, todoId } = { ...req.params };
+    let validListAndTodo = await res.locals.store._isValid(+todoListId, +todoId);
+    if (!validListAndTodo) throw new Error("Not found.");
+    
+    await res.locals.store.deleteTodo(+todoListId, +todoId);
+    req.flash("success", "The todo has been deleted.");
+    res.redirect(`/lists/${todoListId}`);
+  })
+);
 
 // Mark all todos as done
 app.post("/lists/:todoListId/complete_all", (req, res, next) => {
