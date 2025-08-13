@@ -86,7 +86,7 @@ app.post("/lists",
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
   ],
-  (req, res, next) => {
+  catchError(async (req, res) => {
     let errors = validationResult(req);
     let todoListTitle = req.body.todoListTitle;
 
@@ -100,19 +100,20 @@ app.post("/lists",
     if (!errors.isEmpty()) {
       errors.array().forEach(message => req.flash("error", message.msg));
       rerenderNewList();
-    } else if (res.locals.store.existsTodoListTitle(todoListTitle)) {
+    } else if (await res.locals.store.existsTodoListTitle(todoListTitle)) {
       req.flash("error", "The list title must be unique.");
       rerenderNewList();
     } else {
-      let created = res.locals.store.createTodoList(todoListTitle);
+      let created = await res.locals.store.createTodoList(todoListTitle);
       if (!created) {
-        next(new Error("Failed to create todo list."));
+        req.flash("error", "The list title must be unique.");
+        rerenderNewList();
       } else {
         req.flash("success", "The todo list has been created.");
         res.redirect("/lists");
       }
     }
-  }
+  })
 );
 
 // Render individual todo list and its todos
