@@ -328,7 +328,7 @@ app.post("/users/signin", (req, res) => {
   }
 });
 
-// Handle Sign In form submission
+// Handle Sign Out.
 app.post("/users/signout", (req, res) => {
   delete req.session.username;
   delete req.session.signedIn;
