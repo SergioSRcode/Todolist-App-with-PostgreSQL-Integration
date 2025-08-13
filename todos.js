@@ -84,32 +84,43 @@ app.post("/lists",
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
   ],
-  (req, res) => {
+  catchError(async (req, res) => {
     let todoListTitle = req.body.todoListTitle;
-    let errors = validationResult(req);
+    try {
+      let errors = validationResult(req);
+      let isDuplicateListTitle = await res.locals.store.existsTodoListTitle(todoListTitle);
 
-    // eliminates duplicate todolist titles
-    if(res.locals.store.existsTodoListTitle(todoListTitle)) {
-      errors.errors.push({ 
-        value: '',
-        msg: 'The list title must be unique.',
-        param: 'todoListTitle',
-        location: 'body'
-      });
-    }
+      // eliminates duplicate todolist titles
+      if (isDuplicateListTitle) {
+        errors.errors.push({ 
+          value: '',
+          msg: 'The list title must be unique.',
+          param: 'todoListTitle',
+          location: 'body'
+        });
+      }
 
-    if (!errors.isEmpty()) {
-      errors.array().forEach(message => req.flash("error", message.msg));
-      res.render("new-list", {
+      if (!errors.isEmpty()) {
+        errors.array().forEach(message => req.flash("error", message.msg));
+        res.render("new-list", {
+          flash: req.flash(),
+          todoListTitle,
+        });
+      } else {
+        await res.locals.store.addTodoList(todoListTitle);
+        req.flash("success", "The todo list has been created.");
+        res.redirect("/lists");
+      }
+    } catch (error) {
+      if (res.locals.store.isUniqueConstraintViolation(error)) {
+        req.flash("error", "The list title must be unique.");
+        res.render("new-list", {
         flash: req.flash(),
         todoListTitle,
-      });
-    } else {
-      res.locals.store.addTodoList(todoListTitle);
-      req.flash("success", "The todo list has been created.");
-      res.redirect("/lists");
+        });
+      }
     }
-  }
+  })
 );
 
 app.get("/lists/:todoListId", 
