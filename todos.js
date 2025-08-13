@@ -307,6 +307,25 @@ app.get("/users/signin", (req, res) => {
   res.render("signin", { flash: req.flash() });
 });
 
+// Login
+app.post("/users/signin", (req, res) => {
+  let username = req.body.username.trim();
+  let password = req.body.password;
+
+  if (username === "admin" && password === "secret") {
+    req.session.username = username;
+    req.session.signedIn = true;
+    req.flash("success", "Welcome!");
+    res.redirect("/lists");
+  } else {
+    req.flash("error", "Invalid credentials.");
+    res.render("signin", { 
+      flash: req.flash(),
+      username: req.body.username,
+    });
+  }
+});
+
 // Error handler
 app.use((err, req, res, _next) => {
   console.log(err); // Writes more extensive information to the console log
