@@ -31,15 +31,12 @@ app.use(session({
   secret: "this is not very secure",
   store: new LokiStore({}),
 }));
-
 app.use(flash());
-
 // Create a new datastore
 app.use((req, res, next) => {
   res.locals.store = new PgPersistence(req.session);
   next();
 });
-
 // Extract session info
 app.use((req, res, next) => {
   res.locals.flash = req.session.flash;
@@ -123,6 +120,7 @@ app.post("/lists",
   })
 );
 
+// Render specified todolist page
 app.get("/lists/:todoListId", 
   catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
@@ -256,7 +254,7 @@ app.post("/lists/:todoListId/edit",
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
   ],
-  catchError(async (req, res, next) => {
+  catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
     let todoList = await res.locals.store.loadTodoList(+todoListId);
     if (!todoList) throw new Error("Not found.");
