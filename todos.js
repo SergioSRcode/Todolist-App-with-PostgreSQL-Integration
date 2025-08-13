@@ -301,6 +301,12 @@ app.post("/lists/:todoListId/edit",
   })
 );
 
+// Render the Sign In page.
+app.get("/users/signin", (req, res) => {
+  req.flash("info", "Please sign in.");
+  res.render("signin", { flash: req.flash() });
+});
+
 // Error handler
 app.use((err, req, res, _next) => {
   console.log(err); // Writes more extensive information to the console log
