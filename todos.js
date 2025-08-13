@@ -309,7 +309,7 @@ app.get("/users/signin", (req, res) => {
   res.render("signin", { flash: req.flash() });
 });
 
-// Login
+// Handle Sign In form submission
 app.post("/users/signin", (req, res) => {
   let username = req.body.username.trim();
   let password = req.body.password;
@@ -326,6 +326,13 @@ app.post("/users/signin", (req, res) => {
       username: req.body.username,
     });
   }
+});
+
+// Handle Sign In form submission
+app.post("/users/signout", (req, res) => {
+  delete req.session.username;
+  delete req.session.signedIn;
+  res.redirect("/users/signin");
 });
 
 // Error handler
