@@ -330,23 +330,26 @@ app.get("/users/signin", (req, res) => {
 });
 
 // Handle Sign In form submission
-app.post("/users/signin", (req, res) => {
-  let username = req.body.username.trim();
-  let password = req.body.password;
+app.post("/users/signin", 
+  catchError(async (req, res) => {
+    let username = req.body.username.trim();
+    let password = req.body.password;
+    let authenticated = await res.locals.store.authenticate(username, password);
 
-  if (username === "admin" && password === "secret") {
-    req.session.username = username;
-    req.session.signedIn = true;
-    req.flash("success", "Welcome!");
-    res.redirect("/lists");
-  } else {
-    req.flash("error", "Invalid credentials.");
-    res.render("signin", { 
-      flash: req.flash(),
-      username: req.body.username,
-    });
-  }
-});
+    if (authenticated) {
+      req.session.username = username;
+      req.session.signedIn = true;
+      req.flash("success", "Welcome!");
+      res.redirect("/lists");
+    } else {
+      req.flash("error", "Invalid credentials.");
+      res.render("signin", { 
+        flash: req.flash(),
+        username: req.body.username,
+      });
+    }
+  })
+);
 
 // Handle Sign Out.
 app.post("/users/signout", (req, res) => {
