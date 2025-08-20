@@ -6,6 +6,7 @@ const { body, validationResult } = require("express-validator");
 const PgPersistence = require("./lib/pg-persistence");
 const store = require("connect-loki");
 const catchError = require("./lib/catch-error");
+const req = require("express/lib/request");
 
 const app = express();
 const host = "localhost";
@@ -50,7 +51,7 @@ app.use((req, res, next) => {
 const requiresAuthentication = (req, res, next) => {
   if (!res.locals.signedIn) {
     console.log("Unauthorized.");
-    res.status(401).send("Unauthorized.");
+    res.redirect(302, "/users/signin");
   } else {
     next();
   }
@@ -63,6 +64,7 @@ app.get("/", (req, res) => {
 
 // Render the list of todo lists
 app.get("/lists", 
+  requiresAuthentication,
   catchError(async (req, res) => {
     let todoLists = await res.locals.store.sortedTodoLists();
     let todosInfo = todoLists.map(todoList => ({
@@ -137,6 +139,7 @@ app.post("/lists",
 
 // Render specified todolist page
 app.get("/lists/:todoListId", 
+  requiresAuthentication,
   catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
     let todoList = await res.locals.store.loadTodoList(+todoListId);
